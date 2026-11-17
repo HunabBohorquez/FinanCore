@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FinanCore — Dashboard Integral de Finanzas y Presupuestos</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">₣</span>
+      <div>
+        <h1>FinanCore</h1>
+        <p>Dashboard integral de finanzas personales</p>
+      </div>
+    </div>
+    <div class="actions">
+      <button id="btn-demo" class="btn btn-primary" type="button">Cargar Mes Demo (18 movimientos)</button>
+      <button id="btn-csv" class="btn" type="button">Exportar CSV</button>
+      <button id="btn-json" class="btn" type="button">Exportar JSON</button>
+      <button id="btn-clear" class="btn btn-danger" type="button">Borrar todo</button>
+    </div>
+  </header>
+
+  <div id="status" class="status" role="status" aria-live="polite"></div>
+
+  <main>
+    <!-- SALUD FINANCIERA -->
+    <section class="card span-12" aria-labelledby="h-health">
+      <h2 id="h-health">Salud financiera <span id="period-label" class="muted"></span></h2>
+      <div class="health-grid">
+        <div class="score-box">
+          <div class="score-value"><span id="score-number">—</span><small>/100</small></div>
+          <span id="score-level" class="badge level-none">Sin datos</span>
+          <div class="score-track" aria-hidden="true"><div id="score-fill" class="score-fill"></div></div>
+        </div>
+        <div class="metrics">
+          <div class="metric">
+            <span class="metric-label">Ingresos totales</span>
+            <strong id="m-income" class="metric-value pos">$0.00</strong>
+          </div>
+          <div class="metric">
+            <span class="metric-label">Gastos totales</span>
+            <strong id="m-expense" class="metric-value neg">$0.00</strong>
+          </div>
+          <div class="metric">
+            <span class="metric-label">Balance neto</span>
+            <strong id="m-balance" class="metric-value">$0.00</strong>
+          </div>
+          <div class="metric">
+            <span class="metric-label">Tasa de ahorro neto</span>
+            <strong id="m-rate" class="metric-value">—</strong>
+          </div>
+          <div class="metric">
+            <span class="metric-label">Cumplimiento presupuestario</span>
+            <strong id="m-compliance" class="metric-value">—</strong>
+          </div>
+          <div class="metric">
+            <span class="metric-label">Desglose de puntos</span>
+            <strong id="m-points" class="metric-value small">—</strong>
+          </div>
+        </div>
+      </div>
+      <p id="score-reco" class="reco">Registra movimientos o carga el mes demo para ver tu diagnóstico.</p>
+    </section>
+
+    <!-- GRÁFICOS -->
+    <section class="card span-6" aria-labelledby="h-bars">
+      <h2 id="h-bars">Ingresos vs. Gastos vs. Balance</h2>
+      <canvas id="chart-bars" class="chart-canvas" role="img" aria-label="Gráfico de barras de ingresos, gastos y balance neto"></canvas>
+    </section>
+    <section class="card span-6" aria-labelledby="h-donut">
+      <h2 id="h-donut">Distribución de gastos por categoría</h2>
+      <canvas id="chart-donut" class="chart-canvas tall" role="img" aria-label="Gráfico de dona con la distribución porcentual de gastos por categoría"></canvas>
+    </section>
+
+    <!-- PRESUPUESTOS -->
+    <section class="card span-12" aria-labelledby="h-budgets">
+      <h2 id="h-budgets">Presupuestos mensuales por categoría</h2>
+      <div class="budgets-grid">
+        <div>
+          <p class="muted small">Define el tope mensual ($) de cada categoría. Déjalo vacío para no presupuestarla.</p>
+          <div id="budget-inputs" class="budget-inputs"></div>
+        </div>
+        <div id="budget-list" class="budget-list" aria-live="polite"></div>
+      </div>
+    </section>
+
+    <!-- LIBRO MAYOR -->
+    <section class="card span-12" aria-labelledby="h-ledger">
+      <h2 id="h-ledger">Libro mayor de transacciones</h2>
+
+      <form id="tx-form" class="tx-form" novalidate>
+        <h3 id="form-title">Nuevo movimiento</h3>
+        <div class="form-grid">
+          <label>Fecha
+            <input type="date" id="f-date" required>
+          </label>
+          <label>Tipo
+            <select id="f-type">
+              <option value="Gasto">Gasto</option>
+              <option value="Ingreso">Ingreso</option>
+            </select>
+          </label>
+          <label>Categoría
+            <select id="f-category"></select>
+          </label>
+          <label class="grow">Descripción
+            <input type="text" id="f-desc" maxlength="80" placeholder="Ej. Despensa semanal" required>
+          </label>
+          <label>Monto ($)
+            <input type="number" id="f-amount" min="0.01" step="0.01" placeholder="0.00" inputmode="decimal" required>
+          </label>
+        </div>
+        <p id="form-errors" class="form-errors" role="alert"></p>
+        <div class="form-actions">
+          <button id="btn-submit" class="btn btn-primary" type="submit">Registrar movimiento</button>
+          <button id="btn-cancel" class="btn" type="button" hidden>Cancelar edición</button>
+        </div>
+      </form>
+
+      <div class="filters" role="search" aria-label="Filtros del libro mayor">
+        <label>Mes
+          <input type="month" id="fl-month">
+        </label>
+        <label>Tipo
+          <select id="fl-type">
+            <option value="">Todos</option>
+            <option value="Ingreso">Ingreso</option>
+            <option value="Gasto">Gasto</option>
+          </select>
+        </label>
+        <label>Categoría
+          <select id="fl-category"></select>
+        </label>
+        <label class="grow">Buscar
+          <input type="search" id="fl-text" placeholder="Texto en descripción o categoría">
+        </label>
+        <div class="filter-buttons">
+          <button id="btn-all-months" class="btn" type="button">Todos los meses</button>
+          <button id="btn-reset-filters" class="btn" type="button">Restablecer</button>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Tipo</th>
+              <th>Categoría</th>
+              <th>Descripción</th>
+              <th class="num">Monto</th>
+              <th class="num">Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="tx-body"></tbody>
+        </table>
+      </div>
+      <p id="tx-footer" class="muted small"></p>
+    </section>
+  </main>
+
+  <footer class="footer">FinanCore · Datos guardados localmente en tu navegador (localStorage)</footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
